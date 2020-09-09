@@ -1,0 +1,24 @@
+Package: DNArLogic
+Type: Package
+Title: Digital Logic Library for DNAr
+Version: 0.3.3
+Authors@R: c(person("Renan", "Marks", email = "renan@facom.ufms.br",
+                    role = c("aut", "cre")))
+Description: This package implements digital logic gates using
+    the methodology from [1]. All the logic is constructed with molecular
+    reactions based on a bistable mechanism for representing bits.
+    [1] - Digital Logic with Molecular Reactions, Hua Jiang, Marc D. Riedel, Keshab K. Parhi.
+License: GNU General Public License Version 2
+Encoding: UTF-8
+LazyData: true
+Depends: R (>= 3.4.0)
+Imports:
+    DNAr (>= 0.9.3),
+    Rdpack (>= 0.4.20),
+    rlist (>= 0.4.6.0)
+Collate:
+    'GATE_LIB.R'
+RoxygenNote: 7.1.0
+RdMacros: Rdpack
+Roxygen: list(markdown = TRUE)
+Suggests: testthat
