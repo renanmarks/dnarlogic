@@ -505,6 +505,102 @@ make_latchd <- function(name, dValue, eValue) {
   return(gate)
 }
 
+#' Create an FlipFlop-D with initial input values.
+#'
+#' @export
+#' @param name The FlipFlop-D name
+#' @param dValue The initial value of Data signal.
+#' @param eValue The initial value of Enable signal
+#' @return An FlipFlop-D gate with its name, species, specific CRN reactions, ki and ci constants.
+make_flipflopd <- function(name, dValue, eValue) {
+  # M is first Latch-D, Q is the second Latch-D
+  ld1 <- make_generic2to1_element(name, 'LD1', 'd', dValue, 'en', eValue, 'm')
+  ld2 <- make_generic2to1_element(name, 'LD2', 'd', dValue, 'en', eValue, 'q')
+
+  # First Latch
+  ld1$species   <- rlist::list.append(ld1$species, list(outTo1 = jn(name, '_LD_m_to_1')))
+  ld1$species   <- rlist::list.append(ld1$species, list(outTo0 = jn(name, '_LD_m_to_0')))
+
+  ld1$ci        <- rlist::list.append(ld1$ci, list(0, 0))
+  ld1$reactions <- rlist::list.append(ld1$reactions, list(
+    # 'D0 + E0 -> D0 + E0 + M_0',
+    jn(ld1$species$input1$value0, ' + ', ld1$species$input2$value0, ' -> ',
+       ld1$species$input1$value0, ' + ', ld1$species$input2$value0, ' + ', ld1$species$outTo0 ),
+
+    # 'D1 + E0 -> D1 + E0 + M_1',
+    jn(ld1$species$input1$value1, ' + ', ld1$species$input2$value0, ' -> ',
+       ld1$species$input1$value1, ' + ', ld1$species$input2$value0, ' + ', ld1$species$outTo1 ),
+
+    # 'M_0 + M1 -> M0',
+    jn(ld1$species$outTo0, ' + ', ld1$species$output$value1, ' -> ', ld1$species$output$value0),
+
+    # 'M_1 + M0 -> M1'
+    jn(ld1$species$outTo1, ' + ', ld1$species$output$value0, ' -> ', ld1$species$output$value1),
+
+    # '2M_0 -> 0',
+    jn('2', ld1$species$outTo0 , ' -> 0'),
+
+    # '2M_1 -> 0',
+    jn('2', ld1$species$outTo1 , ' -> 0')
+  ))
+
+  ld1$ki <- rlist::list.append(ld1$ki, list(
+    1E+4,
+    1E+4,
+
+    1E+4,
+    1E+4,
+
+    1E+4,
+    1E+4))
+
+
+  ld2$species   <- rlist::list.append(ld2$species, list(outTo1 = jn(name, '_LD_q_to_1')))
+  ld2$species   <- rlist::list.append(ld2$species, list(outTo0 = jn(name, '_LD_q_to_0')))
+
+  ld2$ci        <- rlist::list.append(ld2$ci, list(0, 0))
+  ld2$reactions <- rlist::list.append(ld2$reactions, list(
+    # 'M0 + E0 -> M0 + E1 + Q_0',
+    jn(ld1$species$output$value0, ' + ', ld2$species$input2$value1, ' -> ',
+       ld1$species$output$value0, ' + ', ld2$species$input2$value1, ' + ', ld2$species$outTo0 ),
+
+    # 'M1 + E0 -> M1 + E1 + Q_1',
+    jn(ld1$species$output$value1, ' + ', ld2$species$input2$value1, ' -> ',
+       ld1$species$output$value1, ' + ', ld2$species$input2$value1, ' + ', ld2$species$outTo1 ),
+
+    # 'Q_0 + Q1 -> Q0',
+    jn(ld2$species$outTo0, ' + ', ld2$species$output$value1, ' -> ', ld2$species$output$value0),
+
+    # 'Q_1 + Q0 -> Q1'
+    jn(ld2$species$outTo1, ' + ', ld2$species$output$value0, ' -> ', ld2$species$output$value1),
+
+    # '2Q_0 -> 0',
+    jn('2', ld2$species$outTo0 , ' -> 0'),
+
+    # '2Q_1 -> 0',
+    jn('2', ld2$species$outTo1 , ' -> 0')
+  ))
+
+  ld2$ki <- rlist::list.append(ld2$ki, list(
+    1E+4,
+    1E+4,
+
+    1E+4,
+    1E+4,
+
+    1E+4,
+    1E+4))
+
+  gate <- list(
+    name      = name,
+    species   = list(ld1$species, ld2$species),
+    reactions = list(ld1$reactions, ld2$reactions),
+    ki        = list(ld1$ki, ld2$ki),
+    ci        = list(ld1$ci, ld2$ci)
+  )
+
+  return(gate)
+}
 
 #' Creates a "link gate", i.e., an object to hold the necessary metadata of linked species.
 #'
