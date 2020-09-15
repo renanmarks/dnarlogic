@@ -1,7 +1,7 @@
 Package: DNArLogic
 Type: Package
 Title: Digital Logic Library for DNAr
-Version: 0.3.3
+Version: 0.3.4
 Authors@R: c(person("Renan", "Marks", email = "renan@facom.ufms.br",
                     role = c("aut", "cre")))
 Description: This package implements digital logic gates using

@@ -505,6 +505,43 @@ make_latchd <- function(name, dValue, eValue) {
   return(gate)
 }
 
+
+#' Creates a "link gate", i.e., an object to hold the necessary metadata of linked species.
+#'
+#' @param sourceSignal The source species to be linked.
+#' @param destinySignal The destiny species that will be linked to source species.
+#' @param negated If the link have a NOT gate between the source and destiny
+#'
+#' @return An object holding the necessary metadata of linked species.
+#' @export
+make_link_gate <- function(sourceSignal, destinySignal, negated = FALSE) {
+
+  valueZero <- destinySignal$value0
+  valueOne <- destinySignal$value1
+
+  if (negated)
+  {
+    valueZero <- destinySignal$value1
+    valueOne <- destinySignal$value0
+  }
+
+  gate <- list(
+    linkedSignals = list(sourceSignal, destinySignal),
+    inverted  = negated,
+    species   = c(),
+    reactions = c( jn(sourceSignal$value1, ' + ', valueZero, ' -> ',
+                      sourceSignal$value1, ' + ', valueOne),
+
+                   jn(sourceSignal$value0, ' + ', valueOne, ' -> ',
+                      sourceSignal$value0, ' + ', valueZero)
+                ),
+    ki        = c(1E+4, 1E+4),
+    ci        = c()
+  )
+
+  return(gate)
+}
+
 #' Create an empty circuit.
 #'
 #' @export
@@ -527,23 +564,58 @@ make_circuit <- function(timing) {
   return(circuit)
 }
 
-#' Add a logic gate to the circuit.
+
+#' Compiles the circuit by combining all the species, reactions, initial concentrations and reaction constants.
+#' This enables the circuit to be simulated in DNAr.
+#'
+#' @param circuit Circuit to be compiled.
+#'
+#' @return Compiled circuit.
+#' @export
+compile_circuit <- function(circuit) {
+
+  circuit$species   = c()
+  circuit$ci        = c()
+  circuit$reactions = c()
+  circuit$ki        = c()
+
+  for (gate in circuit$gates)
+  {
+    circuit$species   = append(circuit$species, unlist(gate$species, use.names = FALSE))
+    circuit$ci        = append(circuit$ci, gate$ci)
+    circuit$reactions = append(circuit$reactions, gate$reactions)
+    circuit$ki        = append(circuit$ki, gate$ki)
+
+    not_duplicated_species = !duplicated(circuit$species)
+    circuit$species = circuit$species[not_duplicated_species]
+    circuit$ci = circuit$ci[not_duplicated_species]
+  }
+
+  return(circuit)
+}
+
+#' Inserts a gate into the circuit schema without pre-compilation of the circuit.
+#'
+#' @param circuit Circuit which will receive the gate.
+#' @param gate Gate to be inserted into the circuit.
+#'
+#' @return The circuit with the inserted gate.
+#' @export
+circuit_insert_gate <- function(circuit, gate) {
+  circuit$gates = rlist::list.append(circuit$gates, gate)
+
+  return(circuit)
+}
+
+#' Inserts a gate into the circuit schema and pre-compiles the circuit.
 #'
 #' @export
 #' @param circuit Circuit which will receive the gate.
-#' @param gate Logic gate to be added into the circuit.
-#' @return The new circuit with the logic gate added.
+#' @param gate Gate to be inserted into the circuit.
+#' @return The circuit with the inserted gate.
 circuit_add_gate <- function(circuit, gate) {
-  circuit$gates = rlist::list.append(circuit$gates, gate)
-
-  circuit$species   = append(circuit$species, unlist(gate$species, use.names = FALSE))
-  circuit$ci        = append(circuit$ci, gate$ci)
-  circuit$reactions = append(circuit$reactions, gate$reactions)
-  circuit$ki        = append(circuit$ki, gate$ki)
-
-  not_duplicated_species = !duplicated(circuit$species)
-  circuit$species = circuit$species[not_duplicated_species]
-  circuit$ci = circuit$ci[not_duplicated_species]
+  circuit <- circuit_insert_gate(circuit, gate)
+  circuit <- compile_circuit(circuit)
 
   return(circuit)
 }
@@ -556,15 +628,8 @@ circuit_add_gate <- function(circuit, gate) {
 #' @param inputSignal The input signal to link.
 #' @return The new circuit with the both signals linked.
 circuit_link_gate_signals <- function(circuit, outputSignal, inputSignal) {
-  circuit$ki        <- append(circuit$ki, 1E+4)
-  circuit$reactions <- append(circuit$reactions,
-                         jn(outputSignal$value1, ' + ', inputSignal$value0, ' -> ',
-                            outputSignal$value1, ' + ', inputSignal$value1))
-
-  circuit$ki        <- append(circuit$ki, 1E+4)
-  circuit$reactions <- append(circuit$reactions,
-                         jn(outputSignal$value0, ' + ', inputSignal$value1, ' -> ',
-                            outputSignal$value0, ' + ', inputSignal$value0))
+  gate <- make_link_gate(sourceSignal = outputSignal, destinySignal = inputSignal, negated = FALSE)
+  circuit <- circuit_add_gate(circuit, gate)
 
   return(circuit)
 }
@@ -579,15 +644,8 @@ circuit_link_gate_signals <- function(circuit, outputSignal, inputSignal) {
 #' @param inputSignal The input signal to link.
 #' @return The new circuit with the both signals linked.
 circuit_link_gate_signals_not <- function(circuit, outputSignal, inputSignal) {
-  circuit$ki        <- append(circuit$ki, 1E+4)
-  circuit$reactions <- append(circuit$reactions,
-                         jn(outputSignal$value1, ' + ', inputSignal$value1, ' -> ',
-                            outputSignal$value1, ' + ', inputSignal$value0))
-
-  circuit$ki        <- append(circuit$ki, 1E+4)
-  circuit$reactions <- append(circuit$reactions,
-                         jn(outputSignal$value0, ' + ', inputSignal$value0, ' -> ',
-                            outputSignal$value0, ' + ', inputSignal$value1))
+  gate <- make_link_gate(sourceSignal = outputSignal, destinySignal = inputSignal, negated = TRUE)
+  circuit <- circuit_add_gate(circuit, gate)
 
   return(circuit)
 }
