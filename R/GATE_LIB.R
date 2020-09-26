@@ -178,9 +178,9 @@ make_generic3to1_gate <- function (name, typename, input1value, input2value, inp
 make_majority_gate <- function(name, input1value, input2value, input3value) {
   gate <- make_generic3to1_gate(name, 'MAJ', input1value, input2value, input3value)
 
-  gate$species   <- rlist::list.append(gate$species, list(outTo1 = jn(name, '_MAJ_out_to_1'), outTo0 = jn(name, '_MAJ_out_to_0')))
-  gate$ci        <- rlist::list.append(gate$ci, list(0, 0))
-  gate$reactions <- rlist::list.append(gate$reactions, list(
+  gate$species   <- append(gate$species, c(outTo1 = jn(name, '_MAJ_out_to_1'), outTo0 = jn(name, '_MAJ_out_to_0')))
+  gate$ci        <- append(gate$ci, list(0, 0))
+  gate$reactions <- append(gate$reactions, list(
 
                       # 'A1 + B1 -> A1 + B1 + Z_1',
                       jn(gate$species$input1$value1, ' + ', gate$species$input2$value1, ' -> ',
@@ -215,7 +215,7 @@ make_majority_gate <- function(name, input1value, input2value, input3value) {
                       jn('2', gate$species$outTo1 , ' -> 0')
   ))
 
-  gate$ki <- rlist::list.append(gate$ki, list(
+  gate$ki <- append(gate$ki, list(
                1E+4,
                1E+4,
                1E+4,
@@ -240,9 +240,9 @@ make_majority_gate <- function(name, input1value, input2value, input3value) {
 make_and_gate <- function(name, input1value, input2value) {
   gate <- make_generic2to1_gate(name, 'AND', input1value, input2value)
 
-  gate$species   <- rlist::list.append(gate$species, list (outTo1 = jn(name, '_AND_out_to_1')))
-  gate$ci        <- rlist::list.append(gate$ci, list(0))
-  gate$reactions <- rlist::list.append(gate$reactions, list(
+  gate$species   <- append(gate$species, c (outTo1 = jn(name, '_AND_out_to_1')))
+  gate$ci        <- append(gate$ci, list(0))
+  gate$reactions <- append(gate$reactions, list(
     # 'X0 + Z1 -> X0 + Z0',
     jn(gate$species$input1$value0, ' + ', gate$species$output$value1, ' -> ',
        gate$species$input1$value0, ' + ', gate$species$output$value0 ),
@@ -262,7 +262,7 @@ make_and_gate <- function(name, input1value, input2value) {
     jn('2', gate$species$outTo1 , ' -> 0')
   ))
 
-  gate$ki <- rlist::list.append(gate$ki, list(
+  gate$ki <- append(gate$ki, list(
           1E+4,
           1E+4,
           1E+4,
@@ -282,9 +282,9 @@ make_and_gate <- function(name, input1value, input2value) {
 make_nand_gate <- function(name, input1value, input2value) {
   gate <- make_generic2to1_gate(name, 'NAND', input1value, input2value)
 
-  gate$species   <- rlist::list.append(gate$species, list(outTo0 = jn(name, '_NAND_out_to_0')))
-  gate$ci        <- rlist::list.append(gate$ci, list(0))
-  gate$reactions <- rlist::list.append(gate$reactions, list(
+  gate$species   <- append(gate$species, c(outTo0 = jn(name, '_NAND_out_to_0')))
+  gate$ci        <- append(gate$ci, list(0))
+  gate$reactions <- append(gate$reactions, list(
     # 'X0 + Z0 -> X0 + Z1',
     jn(gate$species$input1$value0, ' + ', gate$species$output$value0, ' -> ',
        gate$species$input1$value0, ' + ', gate$species$output$value1 ),
@@ -304,7 +304,7 @@ make_nand_gate <- function(name, input1value, input2value) {
     jn('2', gate$species$outTo0 , ' -> 0')
   ))
 
-  gate$ki <- rlist::list.append(gate$ki, list(
+  gate$ki <- append(gate$ki, list(
                1E+4,
                1E+4,
                1E+4,
@@ -324,9 +324,9 @@ make_nand_gate <- function(name, input1value, input2value) {
 make_or_gate <- function(name, input1value, input2value) {
   gate <- make_generic2to1_gate(name, 'OR', input1value, input2value)
 
-  gate$species   <- rlist::list.append(gate$species, list(outTo0 = jn(name, '_OR_out_to_0')))
-  gate$ci        <- rlist::list.append(gate$ci, list(0))
-  gate$reactions <- rlist::list.append(gate$reactions, list(
+  gate$species   <- append(gate$species, c(outTo0 = jn(name, '_OR_out_to_0')))
+  gate$ci        <- append(gate$ci, list(0))
+  gate$reactions <- append(gate$reactions, list(
     # 'X1 + Z0 -> X1 + Z1',
     jn(gate$species$input1$value1, ' + ', gate$species$output$value0, ' -> ',
        gate$species$input1$value1, ' + ', gate$species$output$value1 ),
@@ -346,7 +346,7 @@ make_or_gate <- function(name, input1value, input2value) {
     jn('2', gate$species$outTo0 , ' -> 0')
   ))
 
-  gate$ki <- rlist::list.append(gate$ki, list(
+  gate$ki <- append(gate$ki, list(
                1E+4,
                1E+4,
                1E+4,
@@ -366,9 +366,9 @@ make_or_gate <- function(name, input1value, input2value) {
 make_nor_gate <- function(name, input1value, input2value) {
   gate <- make_generic2to1_gate(name, 'NOR', input1value, input2value)
 
-  gate$species   <- rlist::list.append(gate$species, list(outTo1 = jn(name, '_NOR_out_to_1')))
-  gate$ci        <- rlist::list.append(gate$ci, list(0))
-  gate$reactions <- rlist::list.append(gate$reactions, list(
+  gate$species   <- append(gate$species, c(outTo1 = jn(name, '_NOR_out_to_1')))
+  gate$ci        <- append(gate$ci, list(0))
+  gate$reactions <- append(gate$reactions, list(
     # 'X1 + Z1 -> X1 + Z0',
     jn(gate$species$input1$value1, ' + ', gate$species$output$value1, ' -> ',
        gate$species$input1$value1, ' + ', gate$species$output$value0 ),
@@ -388,7 +388,7 @@ make_nor_gate <- function(name, input1value, input2value) {
     jn('2', gate$species$outTo1 , ' -> 0')
   ))
 
-  gate$ki <- rlist::list.append(gate$ki, list(
+  gate$ki <- append(gate$ki, list(
                1E+4,
                1E+4,
                1E+4,
@@ -408,10 +408,10 @@ make_nor_gate <- function(name, input1value, input2value) {
 make_xor_gate <- function(name, input1value, input2value) {
   gate <- make_generic2to1_gate(name, 'XOR', input1value, input2value)
 
-  gate$species   <- rlist::list.append(gate$species, list(outTo1 = jn(name, '_XOR_out_to_1')))
-  gate$species   <- rlist::list.append(gate$species, list(outTo0 = jn(name, '_XOR_out_to_0')))
-  gate$ci        <- rlist::list.append(gate$ci, list(0, 0))
-  gate$reactions <- rlist::list.append(gate$reactions, list(
+  gate$species   <- append(gate$species, c(outTo1 = jn(name, '_XOR_out_to_1')))
+  gate$species   <- append(gate$species, c(outTo0 = jn(name, '_XOR_out_to_0')))
+  gate$ci        <- append(gate$ci, list(0, 0))
+  gate$reactions <- append(gate$reactions, list(
     # 'X0 + Y1 -> X0 + Y1 + Z_1',
     jn(gate$species$input1$value0, ' + ', gate$species$input2$value1, ' -> ',
        gate$species$input1$value0, ' + ', gate$species$input2$value1, ' + ', gate$species$outTo1 ),
@@ -443,7 +443,7 @@ make_xor_gate <- function(name, input1value, input2value) {
     jn('2', gate$species$outTo0, ' -> 0')
   ))
 
-  gate$ki <- rlist::list.append(gate$ki, list(
+  gate$ki <- append(gate$ki, list(
                1E+4,
                1E+4,
                1E+4,
@@ -467,10 +467,10 @@ make_xor_gate <- function(name, input1value, input2value) {
 make_latchd <- function(name, dValue, eValue) {
   gate <- make_generic2to1_element(name, 'LD', 'd', dValue, 'en', eValue, 'q')
 
-  gate$species   <- rlist::list.append(gate$species, list(outTo1 = jn(name, '_LD_q_to_1')))
-  gate$species   <- rlist::list.append(gate$species, list(outTo0 = jn(name, '_LD_q_to_0')))
-  gate$ci        <- rlist::list.append(gate$ci, list(0, 0))
-  gate$reactions <- rlist::list.append(gate$reactions, list(
+  gate$species   <- append(gate$species, c(outTo1 = jn(name, '_LD_q_to_1')))
+  gate$species   <- append(gate$species, c(outTo0 = jn(name, '_LD_q_to_0')))
+  gate$ci        <- append(gate$ci, list(0, 0))
+  gate$reactions <- append(gate$reactions, list(
     # 'D0 + E1 -> D0 + E1 + Q_0',
     jn(gate$species$input1$value0, ' + ', gate$species$input2$value1, ' -> ',
        gate$species$input1$value0, ' + ', gate$species$input2$value1, ' + ', gate$species$outTo0 ),
@@ -492,7 +492,7 @@ make_latchd <- function(name, dValue, eValue) {
     jn('2', gate$species$outTo1 , ' -> 0')
   ))
 
-  gate$ki <- rlist::list.append(gate$ki, list(
+  gate$ki <- append(gate$ki, list(
                1E+4,
                1E+4,
 
