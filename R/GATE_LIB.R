@@ -518,93 +518,37 @@ make_latchd <- function(name, dValue, eValue) {
 #' @param eValue The initial value of Enable signal
 #' @return An FlipFlop-D gate with its name, species, specific CRN reactions, ki and ci constants.
 make_flipflopd <- function(name, dValue, eValue) {
-  # M is first Latch-D, Q is the second Latch-D
-  ld1 <- make_generic2to1_element(name, 'LD1', 'd', dValue, 'en', eValue, 'm')
-  ld2 <- make_generic2to1_element(name, 'LD2', 'd', dValue, 'en', eValue, 'q')
+  entity <- make_circuit(0)
 
-  # First Latch
-  ld1$species   <- rlist::list.append(ld1$species, list(outTo1 = jn(name, '_LD_m_to_1')))
-  ld1$species   <- rlist::list.append(ld1$species, list(outTo0 = jn(name, '_LD_m_to_0')))
+  interface <- make_generic2to1_gate(name, 'ffd', dValue, eValue)
 
-  ld1$ci        <- rlist::list.append(ld1$ci, list(0, 0))
-  ld1$reactions <- rlist::list.append(ld1$reactions, list(
-    # 'D0 + E0 -> D0 + E0 + M_0',
-    jn(ld1$species$input1$value0, ' + ', ld1$species$input2$value0, ' -> ',
-       ld1$species$input1$value0, ' + ', ld1$species$input2$value0, ' + ', ld1$species$outTo0 ),
+  entity$inputs <- list(interface$species$input1, interface$species$input2)
 
-    # 'D1 + E0 -> D1 + E0 + M_1',
-    jn(ld1$species$input1$value1, ' + ', ld1$species$input2$value0, ' -> ',
-       ld1$species$input1$value1, ' + ', ld1$species$input2$value0, ' + ', ld1$species$outTo1 ),
+  # Instantiate the sub-entities
+  ld1  <- make_latchd(jn(name, '_ffd_ld1'), 0, 0)
+  ld2  <- make_latchd(jn(name, '_ffd_ld2'), 0, 0)
 
-    # 'M_0 + M1 -> M0',
-    jn(ld1$species$outTo0, ' + ', ld1$species$output$value1, ' -> ', ld1$species$output$value0),
+  # Output
+  entity$output <- c(interface$species$output)
 
-    # 'M_1 + M0 -> M1'
-    jn(ld1$species$outTo1, ' + ', ld1$species$output$value0, ' -> ', ld1$species$output$value1),
+  # Insert sub-entities
+  entity <- circuit_insert_gate(entity, interface)
+  entity <- circuit_insert_gate(entity, ld1)
+  entity <- circuit_insert_gate(entity, ld2)
 
-    # '2M_0 -> 0',
-    jn('2', ld1$species$outTo0 , ' -> 0'),
+  # Sub-entities interconnections
+  entity <- circuit_insert_gate(entity, make_link_gate(interface$species$input1, ld1$species$input1))
+  entity <- circuit_insert_gate(entity, make_link_gate(interface$species$input2, ld1$species$input2, negated = TRUE))
 
-    # '2M_1 -> 0',
-    jn('2', ld1$species$outTo1 , ' -> 0')
-  ))
+  entity <- circuit_insert_gate(entity, make_link_gate(ld1$species$output, ld2$species$input1))
+  entity <- circuit_insert_gate(entity, make_link_gate(interface$species$input2, ld2$species$input2))
 
-  ld1$ki <- rlist::list.append(ld1$ki, list(
-    1E+4,
-    1E+4,
+  entity <- circuit_insert_gate(entity, make_link_gate(ld2$species$output, interface$species$output))
 
-    1E+4,
-    1E+4,
+  # Combine all the sub-entities in the final entity
+  entity <- circuit_compile(entity)
 
-    1E+4,
-    1E+4))
-
-
-  ld2$species   <- rlist::list.append(ld2$species, list(outTo1 = jn(name, '_LD_q_to_1')))
-  ld2$species   <- rlist::list.append(ld2$species, list(outTo0 = jn(name, '_LD_q_to_0')))
-
-  ld2$ci        <- rlist::list.append(ld2$ci, list(0, 0))
-  ld2$reactions <- rlist::list.append(ld2$reactions, list(
-    # 'M0 + E0 -> M0 + E1 + Q_0',
-    jn(ld1$species$output$value0, ' + ', ld2$species$input2$value1, ' -> ',
-       ld1$species$output$value0, ' + ', ld2$species$input2$value1, ' + ', ld2$species$outTo0 ),
-
-    # 'M1 + E0 -> M1 + E1 + Q_1',
-    jn(ld1$species$output$value1, ' + ', ld2$species$input2$value1, ' -> ',
-       ld1$species$output$value1, ' + ', ld2$species$input2$value1, ' + ', ld2$species$outTo1 ),
-
-    # 'Q_0 + Q1 -> Q0',
-    jn(ld2$species$outTo0, ' + ', ld2$species$output$value1, ' -> ', ld2$species$output$value0),
-
-    # 'Q_1 + Q0 -> Q1'
-    jn(ld2$species$outTo1, ' + ', ld2$species$output$value0, ' -> ', ld2$species$output$value1),
-
-    # '2Q_0 -> 0',
-    jn('2', ld2$species$outTo0 , ' -> 0'),
-
-    # '2Q_1 -> 0',
-    jn('2', ld2$species$outTo1 , ' -> 0')
-  ))
-
-  ld2$ki <- rlist::list.append(ld2$ki, list(
-    1E+4,
-    1E+4,
-
-    1E+4,
-    1E+4,
-
-    1E+4,
-    1E+4))
-
-  gate <- list(
-    name      = name,
-    species   = list(ld1$species, ld2$species),
-    reactions = list(ld1$reactions, ld2$reactions),
-    ki        = list(ld1$ki, ld2$ki),
-    ci        = list(ld1$ci, ld2$ci)
-  )
-
-  return(gate)
+  return(entity)
 }
 
 #' Creates a "link gate", i.e., an object to hold the necessary metadata of linked species.
