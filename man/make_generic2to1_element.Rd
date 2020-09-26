@@ -11,7 +11,8 @@ make_generic2to1_element(
   input1value,
   in2str,
   input2value,
-  outstr
+  outstr,
+  initc = 1
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ make_generic2to1_element(
 \item{input2value}{The initial value of input2.}
 
 \item{outstr}{The string identifier of output signal.}
+
+\item{initc}{Initial concentration value}
 }
 \value{
 A generic logic gate with its name, species, CRN reactions, ki and ci constants.

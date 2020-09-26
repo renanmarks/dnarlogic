@@ -13,7 +13,8 @@ make_generic3to1_element(
   input2value,
   in3str,
   input3value,
-  outstr
+  outstr,
+  initc = 1
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ make_generic3to1_element(
 \item{input3value}{The initial value of input3.}
 
 \item{outstr}{The string identifier of output signal.}
+
+\item{initc}{Initial concentration value}
 }
 \value{
 A generic logic gate with its name, species, CRN reactions, ki and ci constants.
