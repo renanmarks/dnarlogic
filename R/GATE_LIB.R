@@ -27,19 +27,22 @@ make_signal_species <- function(name) {
 make_signal <- function(name) {
   species <- make_signal_species(name)
 
+  ci <- c(0, 0, 0)
+
   reactions <- list(
     jn(species$value0, ' + ', species$value1, ' -> ', species$switch),
     jn(species$switch, ' + ', species$value0, ' -> 3', species$value0),
     jn(species$switch, ' + ', species$value1, ' -> 3', species$value1)
   )
 
-  ki <- c(1E+4, 1E+4, 1E+4)
+  ki <- c(1E-2, 1E-2, 1E-2)
 
   signal <- list(
     name      = name,
     species   = species,
     reactions = reactions,
-    ki        = ki
+    ki        = ki,
+    ci        = ci
   )
 
   return(signal)
@@ -55,23 +58,24 @@ make_signal <- function(name) {
 #' @param in2str The string identifier of input2 signal.
 #' @param input2value The initial value of input2.
 #' @param outstr The string identifier of output signal.
+#' @param initc Initial concentration value
 #' @return A generic logic gate with its name, species, CRN reactions, ki and ci constants.
-make_generic2to1_element <- function (name, typename, in1str, input1value, in2str, input2value, outstr) {
+make_generic2to1_element <- function (name, typename, in1str, input1value, in2str, input2value, outstr, initc = 1E-0) {
   input1 <- make_signal(jn(name, '_', typename, '_', in1str))
   input2 <- make_signal(jn(name, '_', typename, '_', in2str))
   output <- make_signal(jn(name, '_', typename, '_', outstr))
 
   species <- list(input1 = input1$species, input2 = input2$species, output = output$species)
 
-  ci <- list((1 - input1value) * 1E-7, # _in1_0
-          (    input1value) * 1E-7, # _in1_1
+  ci <- list((1 - input1value) * initc, # _in1_0
+          (    input1value) * initc, # _in1_1
           0,    # _in1_S
 
-          (1 - input2value) * 1E-7, # _in2_0
-          (    input2value) * 1E-7, # _in2_1
+          (1 - input2value) * initc, # _in2_0
+          (    input2value) * initc, # _in2_1
           0,    # _in2_S
 
-          1E-7, # _out_0
+          initc, # _out_0
           0,    # _out_1
           0     # _out_S
   )
@@ -114,8 +118,9 @@ make_generic2to1_gate <- function (name, typename, input1value, input2value) {
 #' @param in3str The string identifier of input3 signal.
 #' @param input3value The initial value of input3.
 #' @param outstr The string identifier of output signal.
+#' @param initc Initial concentration value
 #' @return A generic logic gate with its name, species, CRN reactions, ki and ci constants.
-make_generic3to1_element <- function (name, typename, in1str, input1value, in2str, input2value, in3str, input3value, outstr) {
+make_generic3to1_element <- function (name, typename, in1str, input1value, in2str, input2value, in3str, input3value, outstr, initc = 1E-0) {
   input1 <- make_signal( jn(name, '_', typename, '_', in1str) )
   input2 <- make_signal( jn(name, '_', typename, '_', in2str) )
   input3 <- make_signal( jn(name, '_', typename, '_', in3str) )
@@ -123,19 +128,19 @@ make_generic3to1_element <- function (name, typename, in1str, input1value, in2st
 
   species <- list(input1 = input1$species, input2 = input2$species, input3 = input3$species, output = output$species)
 
-  ci <- list((1 - input1value) * 1E-7, # _in1_0
-          (    input1value) * 1E-7, # _in1_1
+  ci <- list((1 - input1value) * initc, # _in1_0
+          (    input1value) * initc, # _in1_1
           0,    # _in1_S
 
-          (1 - input2value) * 1E-7, # _in2_0
-          (    input2value) * 1E-7, # _in2_1
+          (1 - input2value) * initc, # _in2_0
+          (    input2value) * initc, # _in2_1
           0,    # _in2_S
 
-          (1 - input3value) * 1E-7, # _in3_0
-          (    input3value) * 1E-7, # _in3_1
+          (1 - input3value) * initc, # _in3_0
+          (    input3value) * initc, # _in3_1
           0,    # _in3_S
 
-          1E-7, # _out_0
+          initc, # _out_0
           0,    # _out_1
           0     # _out_S
   )
@@ -216,16 +221,16 @@ make_majority_gate <- function(name, input1value, input2value, input3value) {
   ))
 
   gate$ki <- append(gate$ki, list(
-               1E+4,
-               1E+4,
-               1E+4,
-               1E+4,
-               1E+4,
-               1E+4,
-               1E+4,
-               1E+4,
-               1E+4,
-               1E+4))
+               1E-2,
+               1E-2,
+               1E-2,
+               1E-2,
+               1E-2,
+               1E-2,
+               1E-2,
+               1E-2,
+               1E-2,
+               1E-2))
 
   return(gate)
 }
@@ -263,11 +268,11 @@ make_and_gate <- function(name, input1value, input2value) {
   ))
 
   gate$ki <- append(gate$ki, list(
-          1E+4,
-          1E+4,
-          1E+4,
-          1E+4,
-          1E+4))
+          1E-2,
+          1E-2,
+          1E-2,
+          1E-2,
+          1E-2))
 
   return(gate)
 }
@@ -305,11 +310,11 @@ make_nand_gate <- function(name, input1value, input2value) {
   ))
 
   gate$ki <- append(gate$ki, list(
-               1E+4,
-               1E+4,
-               1E+4,
-               1E+4,
-               1E+4))
+               1E-2,
+               1E-2,
+               1E-2,
+               1E-2,
+               1E-2))
 
   return(gate)
 }
@@ -347,11 +352,11 @@ make_or_gate <- function(name, input1value, input2value) {
   ))
 
   gate$ki <- append(gate$ki, list(
-               1E+4,
-               1E+4,
-               1E+4,
-               1E+4,
-               1E+4))
+               1E-2,
+               1E-2,
+               1E-2,
+               1E-2,
+               1E-2))
 
   return(gate)
 }
@@ -389,11 +394,11 @@ make_nor_gate <- function(name, input1value, input2value) {
   ))
 
   gate$ki <- append(gate$ki, list(
-               1E+4,
-               1E+4,
-               1E+4,
-               1E+4,
-               1E+4))
+               1E-2,
+               1E-2,
+               1E-2,
+               1E-2,
+               1E-2))
 
   return(gate)
 }
@@ -444,15 +449,15 @@ make_xor_gate <- function(name, input1value, input2value) {
   ))
 
   gate$ki <- append(gate$ki, list(
-               1E+4,
-               1E+4,
-               1E+4,
-               1E+4,
+               1E-2,
+               1E-2,
+               1E-2,
+               1E-2,
 
-               1E+4,
-               1E+4,
-               1E+4,
-               1E+4))
+               1E-2,
+               1E-2,
+               1E-2,
+               1E-2))
 
   return(gate)
 }
@@ -493,14 +498,14 @@ make_latchd <- function(name, dValue, eValue) {
   ))
 
   gate$ki <- append(gate$ki, list(
-               1E+4,
-               1E+4,
+               1E-2,
+               1E-2,
 
-               1E+4,
-               1E+4,
+               1E-2,
+               1E-2,
 
-               1E+4,
-               1E+4))
+               1E-2,
+               1E-2))
 
   return(gate)
 }
@@ -631,11 +636,28 @@ make_link_gate <- function(sourceSignal, destinySignal, negated = FALSE) {
                    jn(sourceSignal$value0, ' + ', valueOne, ' -> ',
                       sourceSignal$value0, ' + ', valueZero)
                 ),
-    ki        = c(1E+4, 1E+4),
+    ki        = c(1E-2, 1E-2),
     ci        = c()
   )
 
   return(gate)
+}
+
+#' Return a list containing all the input species from a gate.
+#'
+#' @param gate Gate used to search the species.
+#' @param inputNumber Number of input
+#'
+#' @return a list containing all the input species from a gate.
+#' @export
+gate_get_input_speciesnames <- function(gate, inputNumber) {
+  # FIXME: implement a more robust algorithm
+  return(list(gate$species[inputNumber]))
+}
+
+gate_get_output_speciesnames <- function(gate, inputNumber) {
+  # FIXME: implement a more robust algorithm
+  return(list(gate$species[inputNumber]))
 }
 
 #' Create an empty circuit.
