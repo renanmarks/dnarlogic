@@ -634,7 +634,7 @@ make_circuit <- function(timing) {
 #'
 #' @return Compiled circuit.
 #' @export
-compile_circuit <- function(circuit) {
+circuit_compile <- function(circuit) {
 
   circuit$species   = c()
   circuit$ci        = c()
@@ -644,9 +644,10 @@ compile_circuit <- function(circuit) {
   for (gate in circuit$gates)
   {
     circuit$species   = append(circuit$species, unlist(gate$species, use.names = FALSE))
-    circuit$ci        = append(circuit$ci, gate$ci)
-    circuit$reactions = append(circuit$reactions, gate$reactions)
-    circuit$ki        = append(circuit$ki, gate$ki)
+    circuit$ci        = append(circuit$ci, unlist(gate$ci, use.names = FALSE))
+
+    circuit$reactions = append(circuit$reactions, unlist(gate$reactions, use.names = FALSE))
+    circuit$ki        = append(circuit$ki, unlist(gate$ki, use.names = FALSE))
 
     not_duplicated_species = !duplicated(circuit$species)
     circuit$species = circuit$species[not_duplicated_species]
@@ -677,7 +678,7 @@ circuit_insert_gate <- function(circuit, gate) {
 #' @return The circuit with the inserted gate.
 circuit_add_gate <- function(circuit, gate) {
   circuit <- circuit_insert_gate(circuit, gate)
-  circuit <- compile_circuit(circuit)
+  circuit <- circuit_compile(circuit)
 
   return(circuit)
 }
