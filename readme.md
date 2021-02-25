@@ -5,3 +5,18 @@ implemented in formal Chemical Reaction Networks (CRN) and DNA-based reaction
 networks using Strand Displacement reactions.
 
 This package uses [DNAr](https://github.com/DanielKneipp/DNAr).
+
+## How to Install It
+
+Firstly, using the R console, install the `devtools` package:
+
+```R
+install.packages("devtools")
+```
+
+After that, just install the `DNAr` package:
+
+```R
+library(devtools)
+devtools::install_github('renanmarks/dnarlogic')
+```
